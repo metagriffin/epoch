@@ -53,6 +53,16 @@ class TestEpoch(unittest.TestCase):
     self.assertEqual(p('20151102T150000Z'), 1446476400)
 
   #----------------------------------------------------------------------------
+  def test_parse(self):
+    from epoch import parse as p
+    self.assertEqual(p(None), None)
+    self.assertEqual(p(1446303600), 1446303600)
+    self.assertEqual(p(1446303600.7), 1446303600.7)
+    self.assertEqual(p('1446303600'), 1446303600)
+    self.assertEqual(p('1446303600.7'), 1446303600.7)
+    self.assertEqual(p('2015-10-31T15:00:00Z'), 1446303600)
+
+  #----------------------------------------------------------------------------
   def test_sod(self):
     import epoch
     self.assertEqual(epoch.sod(ts=1474307548), 1474243200)
