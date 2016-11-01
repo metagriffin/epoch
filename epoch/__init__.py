@@ -164,14 +164,24 @@ def tzcorrect(dt):
   return dt.tzinfo.localize(dt.replace(tzinfo=None))
 
 #------------------------------------------------------------------------------
-def sod(ts=None, tz=None, offset=None):
+def sod(ts=None, tz=None, offset=None, replace=None):
   '''
   Returns the epoch timestamp of the start of the current day relative
   to the timezone `tz`. If `ts` is specified, the start of the day
   containing `ts` is returned. If `offset` is specified, it is taken
   to be an integral number of days to offset the returned value by.
   Note that due to leap seconds, daylight savings, etc, this is more
-  complex than just 60 seconds * 60 minutes * 24 hours.
+  complex than just 60 seconds * 60 minutes * 24 hours. If `replace`
+  is specified, it is a dictionary of datetime attributes to replace
+  after all other modifications have been made.
+
+  For example, the following will return the epoch timestamp in
+  Anchorage, AK, USA for tomorrow at 3 PM local time:
+
+  .. code:: python
+
+    epoch.sod(offset=1, tz='America/Anchorage', replace=dict(hour=15))
+
   '''
   tz = getTz(tz)
   if ts is None:
@@ -180,10 +190,12 @@ def sod(ts=None, tz=None, offset=None):
   ret = dtreplace(ts2dt(ts, tz=tz), hour=0, minute=0, second=0, microsecond=0)
   if offset:
     ret = tzcorrect(ret + timedelta(days=offset))
+  if replace:
+    ret = dtreplace(ret, **replace)
   return dt2ts(ret)
 
 #------------------------------------------------------------------------------
-def sow(ts=None, tz=None, offset=None, day=None):
+def sow(ts=None, tz=None, offset=None, day=None, replace=None):
   '''
   Returns the epoch timestamp of the start of the current Gregorian
   week relative to the timezone `tz`. If `ts` is specified, the start
@@ -193,7 +205,10 @@ def sow(ts=None, tz=None, offset=None, day=None):
   savings, etc, this is more complex than just 60 seconds * 60 minutes
   * 24 hours * 7 days. If `day` is specified, it specifies which day
   is defined to be the "first" day of the week, where ``0`` (the
-  default) is Monday through ``6`` being Sunday.
+  default) is Monday through ``6`` being Sunday. If `replace` is
+  specified, it is a dictionary of datetime attributes to replace
+  after all other modifications have been made (see `sod` for
+  examples).
   '''
   tz = getTz(tz)
   if ts is None:
@@ -214,16 +229,20 @@ def sow(ts=None, tz=None, offset=None, day=None):
     #       because `datetime.datetime` behaves incorrectly when it is
     #       forced to cross DST boundaries...
     ret = tzcorrect(ret)
+  if replace:
+    ret = dtreplace(ret, **replace)
   return dt2ts(ret)
 
 #------------------------------------------------------------------------------
-def som(ts=None, tz=None, offset=None):
+def som(ts=None, tz=None, offset=None, replace=None):
   '''
   Returns the epoch timestamp of the start of the current Gregorian
   month relative to the timezone `tz`. If `ts` is specified, the start
   of the month containing `ts` is returned. If `offset` is specified,
-  it is taken to be an integral number of months to offset the returned
-  value by.
+  it is taken to be an integral number of months to offset the
+  returned value by. If `replace` is specified, it is a dictionary of
+  datetime attributes to replace after all other modifications have
+  been made (see `sod` for examples).
   '''
   tz = getTz(tz)
   if ts is None:
@@ -248,16 +267,20 @@ def som(ts=None, tz=None, offset=None):
         year += 1
         month -= 12
       ret = dtreplace(ret, year=year, month=month)
+  if replace:
+    ret = dtreplace(ret, **replace)
   return dt2ts(ret)
 
 #------------------------------------------------------------------------------
-def soy(ts=None, tz=None, offset=None):
+def soy(ts=None, tz=None, offset=None, replace=None):
   '''
   Returns the epoch timestamp of the start of the current Gregorian
   year relative to the timezone `tz`. If `ts` is specified, the start
   of the year containing `ts` is returned. If `offset` is specified,
   it is taken to be an integral number of years to offset the returned
-  value by.
+  value by. If `replace` is specified, it is a dictionary of datetime
+  attributes to replace after all other modifications have been made
+  (see `sod` for examples).
   '''
   tz = getTz(tz)
   if ts is None:
@@ -266,6 +289,8 @@ def soy(ts=None, tz=None, offset=None):
   ret = dtreplace(ts2dt(ts, tz=tz), month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
   if offset:
     ret = dtreplace(ret, year=ret.year + offset)
+  if replace:
+    ret = dtreplace(ret, **replace)
   return dt2ts(ret)
 
 #------------------------------------------------------------------------------
