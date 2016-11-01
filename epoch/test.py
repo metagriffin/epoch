@@ -105,6 +105,20 @@ class TestEpoch(unittest.TestCase):
     # todo: find a leap-second offset wrench and test that...
 
   #----------------------------------------------------------------------------
+  def test_sod_replace(self):
+    import epoch
+    et = 'America/New_York'
+    # 1478037582 == 2016-11-01T21:59:42Z
+    #   +5 days is Sunday, and the switch from EDT to EST
+    #   hence the weirdness that sod + 16.5 * 3600 == 15:30 !
+    self.assertEqual(
+      epoch.sod(ts=1478037582, offset=5, tz=et) + 16.5 * 3600,
+      1478464200)
+    self.assertEqual(
+      epoch.sod(ts=1478037582, offset=5, tz=et, replace=dict(hour=15, minute=30)),
+      1478464200)
+
+  #----------------------------------------------------------------------------
   def test_sow(self):
     import epoch
     self.assertEqual(epoch.sow(ts=1474307548), 1474243200)
