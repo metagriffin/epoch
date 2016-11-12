@@ -187,6 +187,40 @@ class TestEpoch(unittest.TestCase):
     # todo: find a leap-second offset wrench and test that...
     # todo: find a leap-year offset wrench and test that...
 
+  #----------------------------------------------------------------------------
+  def test_ts2age(self):
+    import epoch
+    self.assertEqual(epoch.ts2age(None, origin=1234567890), None)
+    self.assertEqual(epoch.ts2age(1202945490, origin=1234567890), -1.0)
+    self.assertEqual(epoch.ts2age(1218670290, origin=1234567890), -0.5)
+    self.assertEqual(epoch.ts2age(1266103890, origin=1234567890), 1.0)
+    self.assertEqual(epoch.ts2age(1344900690, origin=1234567890), 3.5)
+    self.assertEqual(epoch.ts2age(2023486290, origin=1234567890), 25)
+    self.assertEqual(epoch.ts2age(2654638290, origin=1234567890), 45)
+    self.assertEqual(epoch.ts2age(2970171090, origin=1234567890), 55)
+
+  #----------------------------------------------------------------------------
+  def test_age2ts(self):
+    import epoch
+    self.assertEqual(epoch.age2ts(None, origin=1234567890), None)
+    self.assertEqual(epoch.age2ts(-1.0, origin=1234567890), 1202945490)
+    self.assertEqual(epoch.age2ts(-0.5, origin=1234567890), 1218670290)
+    self.assertEqual(epoch.age2ts(1.0,  origin=1234567890), 1266103890)
+    self.assertEqual(epoch.age2ts(3.5,  origin=1234567890), 1344900690)
+    self.assertEqual(epoch.age2ts(25,   origin=1234567890), 2023486290)
+    self.assertEqual(epoch.age2ts(45,   origin=1234567890), 2654638290)
+    self.assertEqual(epoch.age2ts(55,   origin=1234567890), 2970171090)
+
+  #----------------------------------------------------------------------------
+  def test_tsreplace(self):
+    import epoch
+    ts = epoch.parse('2015-12-08T14:56:33Z')
+    self.assertEqual(ts, 1449586593)
+    ts = epoch.tsreplace(ts, hour=9, minute=30)
+    self.assertEqual(ts, 1449567033)
+    ts = epoch.tsreplace(ts, tz='Europe/Paris', hour=9, minute=30)
+    self.assertEqual(ts, 1449563433)
+
 
 #------------------------------------------------------------------------------
 # end of $Id$
