@@ -23,12 +23,14 @@ import time
 from datetime import datetime, timedelta, tzinfo
 import calendar
 import re
+import math
 
 import pytz
 
 #------------------------------------------------------------------------------
 
 DEFAULT_TZ              = pytz.UTC
+DAYSPERYEAR             = 365.2422
 
 #------------------------------------------------------------------------------
 def setDefaultTz(tz):
@@ -319,6 +321,93 @@ def soy(ts=None, tz=None, offset=None, replace=None):
   if replace:
     ret = dtreplace(ret, **replace)
   return dt2ts(ret)
+
+#------------------------------------------------------------------------------
+def ts2age(ts, origin=None, tz=None):
+  '''
+  Returns the age, expressed as a floating point number of years, of
+  timestamp `ts` relative to the starting timestamp `origin` (defaults
+  to the current time), and evaluated in timezone `tz` (defaults to
+  UTC).
+
+  Example:
+
+  .. code:: python
+
+    >>> import epoch
+    >>> epoch.ts2age(epoch.parse('2009-02-13T23:31:30Z'), origin=epoch.parse('2008-02-13T23:31:30Z'))
+    1.0
+
+  '''
+  if origin is None:
+    origin = now()
+  if ts is None:
+    return None
+  tz = getTz(tz)
+  ts = ts2dt(ts, tz=tz)
+  at = ts2dt(origin, tz=tz)
+  ret = 0
+  if ts.microsecond != at.microsecond:
+    ret += ts.microsecond - at.microsecond
+  ret /= 1000000.0
+  if ts.second != at.second:
+    ret += ts.second - at.second
+  ret /= 60.0
+  if ts.minute != at.minute:
+    ret += ts.minute - at.minute
+  ret /= 60.0
+  if ts.hour != at.hour:
+    ret += ts.hour - at.hour
+  ret /= 24.0
+  if ts.day != at.day:
+    ret += ts.day - at.day
+  ret /= ( DAYSPERYEAR / 12.0 )
+  if ts.month != at.month:
+    ret += ts.month - at.month
+  ret /= 12.0
+  if ts.year != at.year:
+    ret += ts.year - at.year
+  return ret
+
+#------------------------------------------------------------------------------
+def age2ts(age, origin=None, tz=None):
+  '''
+  Returns the timestamp of the floating point number of years `age`
+  relative to the starting timestamp `origin` (defaults to the current
+  time), and evaluated in timezone `tz` (defaults to UTC).
+
+  Example:
+
+  .. code:: python
+
+    >>> import epoch
+    >>> epoch.zulu(epoch.age2ts(2.5, origin=epoch.parse('2008-02-13T23:31:30Z')))
+    2010-08-13T23:31:30Z
+
+  '''
+  if origin is None:
+    origin = now()
+  if age is None:
+    return None
+  at = ts2dt(origin, tz=getTz(tz))
+  if math.trunc(age) != 0:
+    at = at.replace(year=at.year + math.trunc(age))
+    age -= math.trunc(age)
+  age *= 12.0
+  if math.trunc(age) != 0:
+    mn = at.month + math.trunc(age)
+    yr = at.year
+    if mn < 1:
+      mn += 12
+      yr -= 1
+    if mn > 12:
+      mn -= 12
+      yr += 1
+    at = at.replace(year=yr, month=mn)
+    age -= math.trunc(age)
+  age *= ( DAYSPERYEAR / 12.0 )
+  at = at + timedelta(days=age)
+  return dt2ts(at)
 
 #------------------------------------------------------------------------------
 # end of $Id$
