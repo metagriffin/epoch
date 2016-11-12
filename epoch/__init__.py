@@ -80,7 +80,8 @@ z = zulu
 #------------------------------------------------------------------------------
 def parse(text):
   '''
-  Tries the following methods of extracting an epoch timestamp from `text`:
+  Tries the following methods of extracting an epoch timestamp from
+  `text`:
 
   * Checks for None, integer, or float type (and returns that as-is)
   * Checks for an all-digits text, and casts that to float
@@ -91,7 +92,6 @@ def parse(text):
   not very forgiving. For a much more human-friendly parser, see the
   example in :func:`parseZulu`.
   '''
-
   if text is None or isinstance(text, (float, int)):
     return text
   try:
