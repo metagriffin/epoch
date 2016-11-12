@@ -151,6 +151,33 @@ def dtreplace(dt, *args, **kw):
   return dt.tzinfo.localize(dt.replace(tzinfo=None).replace(*args, **kw))
 
 #------------------------------------------------------------------------------
+def tsreplace(ts=None, tz=None, *args, **kw):
+  '''
+  An epoch timestamp-oriented version of `dtreplace`. Example:
+
+  .. code:: python
+
+    import epoch
+
+    ts = epoch.parse('2015-12-08T14:56:33Z')
+    # ts == 1449586593.0
+
+    ts = epoch.tsreplace(ts, hour=9, minute=30)
+    # ts == 1449567033.0
+    s = epoch.zulu(ts)
+    # s == '2015-12-08T09:30:33.000Z'
+
+    ts = epoch.tsreplace(ts, tz='Europe/Paris', hour=9, minute=30)
+    # ts == 1449563433.0
+    s = epoch.zulu(ts)
+    # s == '2015-12-08T08:30:33.000Z'
+
+  '''
+  if ts is None:
+    ts = now()
+  return dt2ts(dtreplace(ts2dt(ts, tz=tz), *args, **kw))
+
+#------------------------------------------------------------------------------
 def tzcorrect(dt):
   '''
   Forces a "re-timezoning" of the `dt` object. This is necessary when
