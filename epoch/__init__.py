@@ -26,6 +26,7 @@ import re
 import math
 
 import pytz
+import six
 
 #------------------------------------------------------------------------------
 
@@ -92,7 +93,7 @@ def parse(text):
   not very forgiving. For a much more human-friendly parser, see the
   example in :func:`parseZulu`.
   '''
-  if text is None or isinstance(text, (float, int)):
+  if text is None or isinstance(text, six.integer_types + (float,)):
     return text
   try:
     return float(text)
