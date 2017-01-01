@@ -39,6 +39,7 @@ test_dependencies = [
 
 dependencies = [
   'pytz                 >= 2013b',
+  'six                  >= 1.4.1',
 ]
 
 classifiers = [
