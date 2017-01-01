@@ -51,6 +51,18 @@ class TestEpoch(unittest.TestCase):
     self.assertEqual(p('20151031T150000Z'), 1446303600)
     self.assertEqual(p('20151101T150000Z'), 1446390000)
     self.assertEqual(p('20151102T150000Z'), 1446476400)
+    self.assertEqual(p('2015-10-31T15:00:00.6Z'), 1446303600.6)
+    self.assertEqual(p('2015-10-31T15:00:00.600Z'), 1446303600.6)
+    self.assertEqual(p('2015-10-31T15:00:00.006Z'), 1446303600.006)
+    self.assertEqual(p('2015-10-31T15:00:00.0006Z'), 1446303600.0006)
+    self.assertEqual(p('20151031T150000.6Z'), 1446303600.6)
+    self.assertEqual(p('20151031T150000.600Z'), 1446303600.6)
+    self.assertEqual(p('20151031T150000.006Z'), 1446303600.006)
+    self.assertEqual(p('20151031T150000.0006Z'), 1446303600.0006)
+    self.assertEqual(p('20151031T150000.000600000Z'), 1446303600.0006)
+    self.assertEqual(p('20151031T150000.000006000Z'), 1446303600.000006)
+    # sub-microsecond accuracy not possible (with current `datetime` sys library)
+    self.assertEqual(p('20151031T150000.000000600Z'), 1446303600)
 
   #----------------------------------------------------------------------------
   def test_parse(self):
@@ -60,7 +72,6 @@ class TestEpoch(unittest.TestCase):
     self.assertEqual(p(1446303600.7), 1446303600.7)
     self.assertEqual(p('1446303600'), 1446303600)
     self.assertEqual(p('1446303600.7'), 1446303600.7)
-    self.assertEqual(p('2015-10-31T15:00:00Z'), 1446303600)
 
   #----------------------------------------------------------------------------
   def test_sod(self):
