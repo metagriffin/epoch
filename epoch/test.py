@@ -22,6 +22,8 @@
 import unittest
 import time
 
+import pytz
+
 #------------------------------------------------------------------------------
 class TestEpoch(unittest.TestCase):
 
@@ -128,6 +130,45 @@ class TestEpoch(unittest.TestCase):
     self.assertEqual(
       epoch.sod(ts=1478037582, offset=5, tz=et, replace=dict(hour=15, minute=30)),
       1478464200)
+
+  #----------------------------------------------------------------------------
+  def test_sod_boundary(self):
+    import epoch
+    et = 'America/New_York'
+    # testing timestamps...
+    #   1477982382 == 2016-11-01T06:39:42Z / 2016-11-01T02:39:42-04:00
+    #   1477958400 == 2016-11-01T00:00:00Z
+    #   1477972800 == 2016-11-01T04:00:00Z / 2016-11-01T00:00:00-04:00
+    #   1477886400 == 2016-10-31T04:00:00Z / 2016-10-31T00:00:00-04:00
+    #   1477872000 == 2016-10-31T00:00:00Z
+    # test no boundary
+    self.assertEqual(
+      epoch.sod(ts=1477982382, tz=pytz.UTC),
+      1477958400)
+    self.assertEqual(
+      epoch.sod(ts=1477982382, tz=et),
+      1477972800)
+    # test 2am boundary (should have no effect on date)
+    self.assertEqual(
+      epoch.sod(ts=1477982382, tz=pytz.UTC, boundary=dict(hour=2)),
+      1477958400)
+    self.assertEqual(
+      epoch.sod(ts=1477982382, tz=et, boundary=dict(hour=2)),
+      1477972800)
+    # test 4am boundary (should change the date BUT ONLY in US/ET)
+    self.assertEqual(
+      epoch.sod(ts=1477982382, tz=pytz.UTC, boundary=dict(hour=4)),
+      1477958400)
+    self.assertEqual(
+      epoch.sod(ts=1477982382, tz=et, boundary=dict(hour=4)),
+      1477886400)
+    # test 7am boundary (should change the date in both UTC and US/ET)
+    self.assertEqual(
+      epoch.sod(ts=1477982382, tz=pytz.UTC, boundary=dict(hour=7)),
+      1477872000)
+    self.assertEqual(
+      epoch.sod(ts=1477982382, tz=et, boundary=dict(hour=7)),
+      1477886400)
 
   #----------------------------------------------------------------------------
   def test_sow(self):

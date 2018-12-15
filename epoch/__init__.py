@@ -201,16 +201,27 @@ def tzcorrect(dt):
   return dt.tzinfo.localize(dt.replace(tzinfo=None))
 
 #------------------------------------------------------------------------------
-def sod(ts=None, tz=None, offset=None, replace=None):
+def sod(ts=None, tz=None, boundary=None, offset=None, replace=None):
   '''
-  Returns the epoch timestamp of the start of the current day relative
-  to the timezone `tz`. If `ts` is specified, the start of the day
-  containing `ts` is returned. If `offset` is specified, it is taken
-  to be an integral number of days to offset the returned value by.
-  Note that due to leap seconds, daylight savings, etc, this is more
-  complex than just 60 seconds * 60 minutes * 24 hours. If `replace`
-  is specified, it is a dictionary of datetime attributes to replace
-  after all other modifications have been made.
+  Returns the epoch timestamp of the start of the current day in the
+  timezone `tz`. If `ts` is specified, the start of the day containing
+  `ts` is returned.
+
+  If `boundary` is specified, it is taken to be the time of day where,
+  if the current time is before this time, then the `sod` is set to
+  the day before, and defaults to midnight. It is a dictionary of
+  datetime attributes. For example, a boundary set to ``dict(hour=4,
+  minute=30)`` and a time of August 3rd at 04:15 in the morning, will
+  have a `sod` of August 2nd at 00:00 in the morning. This is mostly
+  useful for determing relative day transitions, i.e. whether or not a
+  given time is "today" vs. "yesterday" / "tomorrow".
+
+  If `offset` is specified, it is taken to be an integral number of
+  days to offset the returned value by. Note that due to leap seconds,
+  daylight savings, etc, this is more complex than just adding 60
+  seconds * 60 minutes * 24 hours. If `replace` is specified, it is a
+  dictionary of datetime attributes to replace after all other
+  modifications have been made.
 
   For example, the following will return the epoch timestamp in
   Anchorage, AK, USA for tomorrow at 3 PM local time:
@@ -219,12 +230,19 @@ def sod(ts=None, tz=None, offset=None, replace=None):
 
     epoch.sod(offset=1, tz='America/Anchorage', replace=dict(hour=15))
 
+  For disambiguation, `boundary` is applied *before* determining a `ts`
+  "true" SOD, and `offset`/`replace` are applied *after*.
   '''
   tz = getTz(tz)
   if ts is None:
     ts = now()
   offset = int(offset or 0)
-  ret = dtreplace(ts2dt(ts, tz=tz), hour=0, minute=0, second=0, microsecond=0)
+  ret = ts2dt(ts, tz=tz)
+  if boundary:
+    if ts < dt2ts(dtreplace(ret, **boundary)):
+      # note: 43200 is 12h...
+      ret = ts2dt(ts - 43200, tz=tz)
+  ret = dtreplace(ret, hour=0, minute=0, second=0, microsecond=0)
   if offset:
     ret = tzcorrect(ret + timedelta(days=offset))
   if replace:
