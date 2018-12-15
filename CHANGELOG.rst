@@ -3,6 +3,12 @@ ChangeLog
 =========
 
 
+v0.1.5
+======
+
+* Added optional `boundary` parameter to `sod` function
+
+
 v0.1.4
 ======
 
